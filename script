@@ -41,4 +41,16 @@ ubus call network.interface.wg0 up 2>/dev/null
 ubus call network.interface.awg0 up 2>/dev/null
 EOF
 
+>/etc/banner
+
+echo "                                              
+                                              
+▄████▄ ▄▄▄▄  ▄▄ ▄▄▄▄▄ ▄▄   ▄▄ ▄▄ ▄▄▄▄  ▄▄  ▄▄ 
+██▄▄██ ██▄█▄ ██ ██▄▄  ██   ██▄██ ██▄█▀ ███▄██ 
+██  ██ ██ ██ ██ ██▄▄▄ ██▄▄▄ ▀█▀  ██    ██ ▀██ 
+                                              
+
+telegram : @arielvpnservice" >> /etc/banner
+
+
 
