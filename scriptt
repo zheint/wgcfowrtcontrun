@@ -1,0 +1,53 @@
+# 1. Create the background service file
+cat << 'EOF' > /etc/init.d/wg_keepalive
+#!/bin/sh /etc/rc.common
+
+START=99
+USE_PROCD=1
+
+start_service() {
+    procd_open_instance
+    # Run a continuous loop pinging Cloudflare DNS every 5 seconds
+    procd_set_param command /bin/sh -c "while true; do ping -c 1 -W 2 1.1.1.1 >/dev/null 2>&1; sleep 5; done"
+    procd_set_param stdout 0
+    procd_set_param stderr 0
+    procd_set_param respawn # Automatically restart the script if it crashes
+    procd_close_instance
+}
+EOF
+
+# 2. Make the script executable
+chmod +x /etc/init.d/wg_keepalive
+
+# 3. Enable the service to run automatically on boot
+/etc/init.d/wg_keepalive enable
+
+# 4. Start the service immediately
+/etc/init.d/wg_keepalive start
+
+# 1. Create the NTP hotplug directory just in case it doesn't exist
+mkdir -p /etc/hotplug.d/ntp
+
+# 2. Write the hotplug script
+cat << 'EOF' > /etc/hotplug.d/ntp/90-wireguard
+#!/bin/sh
+# Only trigger when the clock successfully syncs (stratum update)
+[ "$ACTION" = stratum ] || exit 0
+
+# Force standard WireGuard to restart and reconnect
+ubus call network.interface.wg0 up 2>/dev/null
+
+# Force AmneziaWG to restart and reconnect
+ubus call network.interface.awg0 up 2>/dev/null
+EOF
+
+>/etc/banner
+
+echo "                                              
+                                              
+▄████▄ ▄▄▄▄  ▄▄ ▄▄▄▄▄ ▄▄   ▄▄ ▄▄ ▄▄▄▄  ▄▄  ▄▄ 
+██▄▄██ ██▄█▄ ██ ██▄▄  ██   ██▄██ ██▄█▀ ███▄██ 
+██  ██ ██ ██ ██ ██▄▄▄ ██▄▄▄ ▀█▀  ██    ██ ▀██ 
+                                              
+
+telegram : @arielvpnservice" >> /etc/banner
